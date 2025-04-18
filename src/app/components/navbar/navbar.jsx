@@ -1,23 +1,24 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // 🛠️ Importa usePathname
 import { auth } from "../../firebase/config";
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname(); // ✅ Este hook reemplaza router.pathname
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsLoggedIn(true);
-        if (router.pathname === "/") {
+        if (pathname === "/") {
           router.push("/home");
         }
       } else {
         setIsLoggedIn(false);
-        if (router.pathname !== "/") {
+        if (pathname !== "/") {
           router.push("/");
         }
       }
@@ -25,7 +26,7 @@ export default function Navbar() {
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [pathname, router]); // ✅ Asegúrate de incluir pathname en dependencias
 
   const handleAuthClick = () => {
     if (isLoggedIn) {
@@ -52,48 +53,15 @@ export default function Navbar() {
 
       {isLoggedIn && (
         <>
-          <a
-            key="Productos"
-            href="/productos"
-            className="relative group transition"
-          >
-            Productos
-            <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
-          </a>
-          <a
-            key="Servicios"
-            href="/servicios"
-            className="relative group transition"
-          >
-            Servicios
-            <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
-          </a>
-          <a
-            key="Ventas"
-            href="/venta"
-            className="relative group transition"
-          >
-            Ventas
-            <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
-          </a>
-          <a
-            key="Computadores"
-            href="/computadores"
-            className="relative group transition"
-          >
-            Computadores
-            <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
-          </a>
+          <a href="/productos" className="relative group transition">Productos</a>
+          <a href="/servicios" className="relative group transition">Servicios</a>
+          <a href="/venta" className="relative group transition">Ventas</a>
+          <a href="/computadores" className="relative group transition">Computadores</a>
         </>
       )}
 
-      <a
-        href="#"
-        onClick={handleAuthClick}
-        className="relative group transition"
-      >
+      <a href="#" onClick={handleAuthClick} className="relative group transition">
         {isLoggedIn ? "Log Out" : "Sign Up"}
-        <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
       </a>
     </nav>
   );
