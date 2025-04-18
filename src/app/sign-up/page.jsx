@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateUserWithEmailAndPassword, useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { useCreateUserWithEmailAndPassword, useSignInWithEmailAndPassword, useSignInWithGoogle } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/config";
 import Head from "next/head";
 import { FcGoogle } from "react-icons/fc";
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 function LoginForm({
   onSubmit,
@@ -19,12 +18,16 @@ function LoginForm({
   showPass,
   setShowPass,
   onGoogle,
+  loadingGoogle,
+  errorGoogle,
 }) {
   return (
     <form onSubmit={onSubmit} className="w-full p-8 space-y-6 bg-black">
       <h2 className="text-2xl font-bold text-white text-center mb-4">Login</h2>
+
       <div className="relative">
         <input
+          id="login-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -36,6 +39,7 @@ function LoginForm({
 
       <div className="relative">
         <input
+          id="login-password"
           type={showPass ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -72,8 +76,13 @@ function LoginForm({
         className="w-full flex items-center justify-center space-x-2 border border-red-700 rounded-xl py-2 hover:bg-red-800 transition bg-black"
       >
         <FcGoogle className="w-6 h-6" />
-        <span className="text-white">Google Login</span>
+        <span className="text-white">
+          {loadingGoogle ? "Cargando..." : "Google Login"}
+        </span>
       </button>
+      {errorGoogle && (
+        <p className="text-red-500 text-center">{errorGoogle.message}</p>
+      )}
     </form>
   );
 }
@@ -91,13 +100,19 @@ function SignUpForm({
   showPass,
   setShowPass,
   onGoogle,
+  loadingGoogle,
+  errorGoogle,
+  passwordMismatchError, // Nueva prop para el error de contraseña
 }) {
   return (
     <form onSubmit={onSubmit} className="w-full p-8 space-y-6 bg-black">
-      <h2 className="text-2xl font-bold text-white text-center mb-4">Sign Up</h2>
+      <h2 className="text-2xl font-bold text-white text-center mb-4">
+        Sign Up
+      </h2>
 
       <div className="relative">
         <input
+          id="signup-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -109,6 +124,7 @@ function SignUpForm({
 
       <div className="relative">
         <input
+          id="signup-password"
           type={showPass ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -127,6 +143,7 @@ function SignUpForm({
 
       <div className="relative">
         <input
+          id="signup-confirm"
           type={showPass ? "text" : "password"}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
@@ -143,6 +160,9 @@ function SignUpForm({
         {loading ? "Cargando..." : "Crear cuenta"}
       </button>
       {error && <p className="text-red-500 text-center">{error.message}</p>}
+      {passwordMismatchError && ( // Mostrar el error de contraseña aquí
+        <p className="text-red-500 text-center">{passwordMismatchError}</p>
+      )}
 
       <div className="flex items-center justify-center space-x-2">
         <span className="h-px flex-1 bg-red-700"></span>
@@ -156,8 +176,13 @@ function SignUpForm({
         className="w-full flex items-center justify-center space-x-2 border border-red-700 rounded-xl py-2 hover:bg-red-800 transition bg-black"
       >
         <FcGoogle className="w-6 h-6" />
-        <span className="text-white">Google Sign Up</span>
+        <span className="text-white">
+          {loadingGoogle ? "Cargando..." : "Google Sign Up"}
+        </span>
       </button>
+      {errorGoogle && (
+        <p className="text-red-500 text-center">{errorGoogle.message}</p>
+      )}
     </form>
   );
 }
@@ -169,29 +194,20 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [passwordMismatchError, setPasswordMismatchError] = useState(""); // Nuevo estado para el error de contraseña
 
-  const [signInWithEmailAndPassword, , loadingLogin, errorLogin] = useSignInWithEmailAndPassword(auth);
-  const [createUserWithEmailAndPassword, , loadingSignUp, errorSignUp] = useCreateUserWithEmailAndPassword(auth);
-
-  // Detectar si venimos de un redirect
-  useEffect(() => {
-    const checkRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          router.push("/home");
-        }
-      } catch (error) {
-        console.error("Redirect error:", error);
-      }
-    };
-    checkRedirect();
-  }, []);
+  const [signInWithEmailAndPassword, , loadingLogin, errorLogin] =
+    useSignInWithEmailAndPassword(auth);
+  const [createUserWithEmailAndPassword, , loadingSignUp, errorSignUp] =
+    useCreateUserWithEmailAndPassword(auth);
+  const [signInWithGoogle, , loadingGoogle, errorGoogle] =
+    useSignInWithGoogle(auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPasswordMismatchError(""); // Limpiar el error al intentar enviar
     if (mode === "signup" && password !== confirm) {
-      alert("Las contraseñas no coinciden");
+      setPasswordMismatchError("Las contraseñas no coinciden"); // Establecer el error en el estado
       return;
     }
     try {
@@ -207,11 +223,11 @@ export default function AuthPage() {
   };
 
   const handleGoogle = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      await signInWithGoogle();
+      router.push("/home");
     } catch (err) {
-      console.error("Google login error:", err);
+      console.error(err);
     }
   };
 
@@ -222,6 +238,7 @@ export default function AuthPage() {
       </Head>
       <div className="min-h-screen bg-black flex items-center justify-center px-4">
         <div className="relative w-full max-w-md overflow-hidden rounded-2xl shadow-lg">
+          {/* Tab buttons */}
           <div className="flex bg-black">
             <button
               onClick={() => setMode("login")}
@@ -245,10 +262,12 @@ export default function AuthPage() {
             </button>
           </div>
 
+          {/* Slider */}
           <div
             className="flex w-[200%] transition-transform duration-500 bg-black"
             style={{
-              transform: mode === "login" ? "translateX(0)" : "translateX(-50%)",
+              transform:
+                mode === "login" ? "translateX(0)" : "translateX(-50%)",
             }}
           >
             <div className="w-1/2">
@@ -263,6 +282,8 @@ export default function AuthPage() {
                 showPass={showPass}
                 setShowPass={setShowPass}
                 onGoogle={handleGoogle}
+                loadingGoogle={loadingGoogle}
+                errorGoogle={errorGoogle}
               />
             </div>
             <div className="w-1/2">
@@ -279,6 +300,9 @@ export default function AuthPage() {
                 showPass={showPass}
                 setShowPass={setShowPass}
                 onGoogle={handleGoogle}
+                loadingGoogle={loadingGoogle}
+                errorGoogle={errorGoogle}
+                passwordMismatchError={passwordMismatchError} // Pasar el estado del error
               />
             </div>
           </div>
