@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import 'react-phone-input-2/lib/style.css';
 
 :root {
   --background: #ffffff;
@@ -23,4 +24,52 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) translateX(-50%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.3s ease-out;
+}
+
+/* Fondo oscuro suave */
+.custom-phone-container {
+  width: 100%;
+}
+
+.custom-phone-input {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+/* Selector de bandera */
+.custom-phone-button {
+  background-color: #1e1e1e !important;
+  border: none !important;
+  border-radius: 10px 0 0 10px !important;
+}
+
+/* Estilo para el dropdown (lista de países) */
+.custom-phone-dropdown {
+  background-color: #2a2a2a !important;
+  color: #fff !important;
+  border: 1px solid #444 !important;
+}
+
+/* Para evitar que las banderas se queden chiquitas */
+.react-tel-input .flag-dropdown {
+  width: auto !important;
 }
