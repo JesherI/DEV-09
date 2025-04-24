@@ -26,7 +26,7 @@ export default function Navbar() {
     });
 
     return () => unsubscribe();
-  }, [pathname, router]); // ✅ Asegúrate de incluir pathname en dependencias
+  }, [pathname, router]);
 
   const handleAuthClick = () => {
     if (isLoggedIn) {
@@ -42,27 +42,56 @@ export default function Navbar() {
 
   return (
     <nav className="flex gap-11 text-white text-lg">
-      <a
-        key="Inicio"
-        href={isLoggedIn ? "/home" : "/"}
-        className="relative group transition"
-      >
-        Inicio
-        <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
-      </a>
+      <div>
+        <a
+          key="Inicio"
+          href={isLoggedIn ? "/home" : "/"}
+          className="relative group transition"
+        >
+          Inicio
+          <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
+        </a>
+      </div>
 
       {isLoggedIn && (
         <>
-          <a href="/productos" className="relative group transition">Productos</a>
-          <a href="/servicios" className="relative group transition">Servicios</a>
-          <a href="/venta" className="relative group transition">Ventas</a>
-          <a href="/computadores" className="relative group transition">Computadores</a>
+          <div>
+            <a href="/productos" className="relative group transition">
+              Productos
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
+            </a>
+          </div>
+          <div>
+            <a href="/servicios" className="relative group transition">
+              Servicios
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
+            </a>
+          </div>
+          <div>
+            <a href="/venta" className="relative group transition">
+              Ventas
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
+            </a>
+          </div>
+          <div>
+            <a href="/computadores" className="relative group transition">
+              Computadores
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
+            </a>
+          </div>
         </>
       )}
 
-      <a href="#" onClick={handleAuthClick} className="relative group transition">
-        {isLoggedIn ? "Log Out" : "Sign Up"}
-      </a>
+      <div>
+        <a
+          href="#"
+          onClick={handleAuthClick}
+          className="relative group transition"
+        >
+          {isLoggedIn ? "Log Out" : "Sign Up"}
+          <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-red-400 group-hover:w-full transition-all duration-500 ease-in-out"></span>
+        </a>
+      </div>
     </nav>
   );
 }
